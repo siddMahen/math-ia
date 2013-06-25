@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{CLRS}
+Thomas~H. Cormen, Charles~E. Leiserson, Ronald~L. Rivest, and Clifford Stein.
+\newblock {\em {Introduction to Algorithms}}.
+\newblock The MIT Press, 55 Hayward Street, Cambridge, MA 02142-1315 USA, third
+  edition, 2009.
+
+\bibitem{eisner97}
+Jason Eisner.
+\newblock {State-of-the-Art Algorithms for Minimum Spanning Trees}.
+\newblock Technical report, University of Pennsylvania, 1997.
+
+\end{thebibliography}
