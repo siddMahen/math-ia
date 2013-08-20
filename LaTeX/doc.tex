@@ -73,18 +73,18 @@ game overlaps with their next class.
 
 Itching to know how the game ends, the students decide to designate one
 student as a broadcaster, who will discretely read the game's twitter
-feed from his phone and tell everyone else what's going on. The students decide
-this broadcaster will tell his neighbours the news, and they will in turn tell
-their neighbours and so forth, until everyone in the class has been updated.
-The students agree this method will arouse the least amount of suspicion from
-their strict teacher, who already separates their desks to keep talking to
-a minimum.
+feed from his phone and tell everyone else what's going on. The students
+decide this broadcaster will tell his neighbours the news, and they will in
+turn tell their neighbours and so forth, until everyone in the class has
+been updated. The students agree this method will arouse the least amount
+of suspicion from their strict teacher, who already separates their desks
+to keep talking to a minimum.
 
-At first, their strategy works well, however, some of their peers are beginning
-to get caught by their teacher. The students quickly realize
+At first, their strategy works well, however, some of their peers are
+beginning to get caught by their teacher. The students quickly realize
 that some methods of propagating the message are less likely to be
 compromised than others, depending on who the students decide to pass
-their messages too. Particularly, the students notice that as the distance
+their messages to. Particularly, the students notice that as the distance
 between themselves and a neighbour they are trying to communicate with
 increases, so do their chances of getting caught.
 
@@ -92,7 +92,7 @@ This begs the question: is there an optimal way to pass the messages around?
 More specifically, is there a way to pass the messages around which gives
 the students the best chances of not being caught?
 
-\section{Safe Messaging and Minimum Spanning Trees}
+\section{Minimum Spanning Trees}
 
 The students' dilemma can be modelled using graph theory. Let $G = (V, E, w)$ be
 a weighted graph whose vertices correspond to students and whose edges
@@ -131,10 +131,19 @@ across the edge is compromised.}
 \label{fig:class-graph}
 \end{figure}
 
+Recall that a graph is connected if there exists a path between every vertex
+$u$ and $v$ in the graph.
+
+\begin{defn}
+Let $G = (V, E, w)$ be a graph. We call $G$ \emph{connected} if there is
+a sequence of adjacent edges, i.e.~a path,  between every vertex $u$ and $v$
+in $G$.
+\end{defn}
+
 Ideally, the students need to find a set of opportunities to pass messages,
-$E' \subset E$, such that the total likely hood that any message is compromised
-is as low as possible, and all of the students in the class receive updates
-about the game.
+$E' \subset E$, such that the total likely hood that any message is
+compromised is as low as possible, and all of the students in the class
+receive updates about the game.
 
 \begin{defn}
 Let $G = (V, E, w)$ be an connected, undirected, weighted graph such that
@@ -158,12 +167,12 @@ Now, if a spanning tree $T$ of a graph $G$ has a cost at least as low as the
 cost of every other possible spanning tree of $G$, we call $T$ a minimum
 spanning tree of $G$.
 
-\begin{defn} Let $T$ be a spanning tree of a graph $G$. We call $T$ a
+\begin{defn} Let $T^*$ be a spanning tree of a graph $G$. We call $T^*$ a
 \emph{minimum spanning tree} (MST) if
 \begin{equation*}
-    c(T) \leq c(T^*)
+    c(T^*) \leq c(T^)
 \end{equation*}
-for all alternate spanning trees $T^*$ of $G$.
+for all alternate spanning trees $T$ of $G$.
 \end{defn}
 
 Given a minimum spanning tree, it is evident the students could achieve their
@@ -217,41 +226,31 @@ students:
     information.
 \end{enumerate}
 
-Minimum spanning trees are not only used to collude against teachers; rather
-they provide a solution to a vast array of real world optimization problems
-in fields as disparate as computer networking to infrastructure construction.
-The solutions to minimum spanning tree problems conserve resources such as
-time, money and precious materials, which would have otherwise been wasted.
-Therefore, it is important to know whether algorithms such as Prim's
-algorithm really do work correctly to output true minimum spanning trees.
+Apart from their utility in colluding against teachers, minimum spanning
+trees have a myriad of other important applications. They provide a solution
+to a vast array of real world optimization problems, in fields as disparate
+as computer networking to machine learning to infrastructure construction.
+Therefore, it is important to know whether algorithms such as Prim's algorithm
+really do work correctly to output minimum spanning trees.
 
-The remainder of this paper will be devoted to proving the correctness of
+The remainder of this paper is devoted to proving the correctness of
 Prim's algorithm.
 
-We will prove the correctness of Prim's algorithm in three parts. First, we
-show that the algorithm terminates. Then we show that it does indeed
-output a spanning tree. Finally, we show that the output spanning tree
-is minimal.
+The proof of correctness will proceed in three parts. First, we show that the
+algorithm terminates. Then we show that it outputs a spanning tree. Finally,
+we that the output spanning tree is minimal.
 
 \section{Connectedness and the Cut Lemma}
 
-Before any of that however, we need to establish an important property of
-connected graphs, which will allows us to more easily navigate the proofs
-ahead.
+Before we begin, let us establish an important property of connected graphs,
+which will allow us to more easily navigate the proofs ahead.
 
-The motivation behind this lemma is that it allows us to easily connect
-what the algorithm does at every iteration to the connectedness of the graph
-the algorithm takes as input. At every iteration, the algorithm adds an
-edge to $T$ which has one endpoint in $X$ and the other in $V - X$. If we
-can show that the connectedness of the input graph $G$ implies that not matter
-what $X$ and $V - X$ we choose, there exists at least one edge with
-endpoints in $X$ and $V - X$ respectively, then we can deduce a variety of
-properties of the algorithm, particularly, that the output graph
-$T^* = (X, T, w)$ will indeed be a spanning tree of $G$.
-
-Intuitively, this follows from the fact that at every iteration, the algorithm
-must select an edge going out of $X$, and by the end of the algorithm $X$ must
-be equal to $V$.
+The motivation behind the following lemma is that it allows us to clearly
+link what Prim's algorithm does at every iteration and the connectedness of its
+input graph. Specifically, at every iteration, the algorithm adds an edge $e$
+to $T$ with one endpoint in $X$ and another endpoint in $V - X$. If we can show
+that for any choice of $X$ and $V - X$, this edge $e$ always exists, then
+we can easily deduce many other properties of the algorithm.
 
 \begin{lem}[{\bfseries The Cut Property}]
 Let $G = (V, E, w)$ be a undirected, weighted graph. Then $G$ is connected
@@ -261,29 +260,28 @@ one edge with a vertex in $A$ and a vertex in $B$, i.e., an edge which
 crosses the cut $(A, B)$.
 
 \begin{proof}
-Assume $G$ is connected. Then there exists a path, or a sequences of edges,
-between every vertex $v$ and $v'$ in $V$. Let $A$ and $B$ be an arbitrary
-partition of $V$ such that $A \cup B = V$ and $A \cap B = \emptyset$.
-Let $a \in A$ and $b \in B$ be two vertices on different sides of the partition.
-Then by the connectedness of $G$, there exists a sequence of edges between
-$a$ and $b$. Because $a$ and $b$ are on different sides of the partition, there
-must be some edge $e \in E$ which has one vertex in $A$ and the other vertex in
-$B$. Hence, there exists a cut which crosses $(A, B)$. Since $A$ and $B$ were
-chosen arbitrarily, we've shown connectedness implies the cut property.
+Assume $G$ is connected. Then there exists a path between every vertex $u$ and
+$v$ in $V$. Let $A$ and $B$ be an arbitrary partition of $V$ such that
+$A \cup B = V$ and $A \cap B = \emptyset$. Now suppose $a \in A$ and $b \in B$
+are two vertices on different sides of the partition. Then by the connectedness
+of $G$, there exists a sequence of edges between $a$ and $b$. Because $a$ and
+$b$ are on different sides of the partition, there must be some edge $e \in E$
+which has one endpoint in $A$ and the other endpoint in $B$. Hence, there
+exists a cut which crosses $(A, B)$. Since $A$ and $B$ were chosen arbitrarily,
+we've shown connectedness implies the cut property.
 
 Now, assume that for all partitions $A$, $B$ of a graph $G$, and there
 exists at least one edge $e \in E$ which has a vertex in $A$ and a vertex in
 $B$. First, we show that for any choice of $A$ and $B$, $A$ and $B$ are
 connected.
 
-Suppose $A$ isn't connected. Then there exists a vertex $x$ and a vertex $y$ in
-$A$ which cannot be connected by a path. Let $X \subset A$ denote the set
-of vertices which can be reached from $x$ by a path and let $Y \subset A$
-denote the set of vertices which can be reached from $y$ by a path. Assume,
-without loss of generality, that $B$ is connected, and $X$ contains the
-vertex whose other end in in $B$. Then the partition $(X \cup B, Y)$ does
-not have any edges with vertices in $X \cup B$ and $Y$, a contradiction.
-Hence, $A$ must be connected. Similarly, $B$ must be connected.
+Suppose $A$ is not connected. Then there exist vertices $x_1, x_2, \ldots, x_k$
+in $A$ which cannot be connected by a path. Let $X \subset A$ denote the
+set of vertices which can be reached from $x_1$ by a path. Assume, without loss
+of generality, that $B$ is connected, and the edge across $(A, B)$ has an
+endpoint in $X$. Then for the partition $X \cup B$ and $A - (X \cup B)$ there
+do not exist any edges which cross the cut $(X \cup B, A - (X \cup B))$, a
+contradiction. Hence, $A$ must be connected. Similarly, $B$ must be connected.
 
 Since $A$ and $B$ are connected by the edge $e$ and $A \cup B = V$, the entire
 graph $G$ is connected. Therefore, we've shown the cut property implies
@@ -293,8 +291,8 @@ connectedness.
 
 \section{Proof of Correctness of Prim's Algorithm}
 
-With that neat lemma under our belt proving the correctness of Prim's algorithm
-becomes much simpler.
+Using the cut property, proving the correctness of Prim's algorithm becomes
+much simpler. %More simple?%
 
 \begin{thm}
 Let $G = (V, E, w)$ be an connected, undirected, weighted graph. Then the
@@ -349,7 +347,7 @@ graph $T^* = (V, T, w)$ will also be acyclic.
 
 Now, since Prim's algorithm terminates when $X = V$, and the output
 $T^* = (X, T, w)$ is connected and acylic, the output of Prim's algorithm
-does indeed constitute a spanning tree of the original graph $G$.
+constitutes a spanning tree of the original graph $G$.
 \end{proof}
 \end{thm}
 
