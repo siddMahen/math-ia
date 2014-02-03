@@ -28,6 +28,9 @@
 % -- Graphics --
 \usepackage{pgfplots}
 
+% -- Code --
+\usepackage{minted}
+
 % -- TOC --
 \usepackage[nottoc,section]{tocbibind}
 \usepackage[titles]{tocloft}
@@ -104,50 +107,67 @@ updates about the game?
 
 \section{Minimum Spanning Trees}
 
-The students' dilemma can be modelled using graph theory. Let $G = (V, E, w)$
-be a simple, connected, weighted graph whose vertices correspond to students
-and whose edges correspond to opportunities to pass messages, where the weight
-$w(e)$ of an edge $e \in E$ corresponds to the risk that the conversation
-between the students $u,v$ at the ends of $e$ is compromised (see
-\Fref{fig:class-graph}). Call $G$ the students' classroom graph.
+The students' dilemma can be modelled using graph theory. Recall that a graph
+is a mathematical object which captures information about the relationships
+between discrete objects.
+
+\begin{defn}
+A \emph{graph} is an ordered pair $G = (V,E)$, where $V$ is a finite set of
+nodes, or vertices, and $E \subseteq V \times V$ is a set of ordered pairs of
+nodes, representing edges.
+\end{defn}
+
+We denote the vertex set and the edge set of a graph $G$ by $V(G)$ and $E(G)$
+respectively. For convenience, we also denote an edge $(u,v)$ in $E(G)$ by
+$uv$.
+
+Let us now introduce some basic graph theoretic vocabulary. We say a graph $G =
+(V,E,w)$ is \emph{weighted} if it is equipped with a function $w: E \to
+\mathbb{R}^+$, which associates each edge to a positive real number. Further,
+we say a graph $G$ is \emph{simple} if, for every element $(u,v)$ in $E(G)$,
+the element $(v,u)$ is also in $E(G)$, and for all $(u,v)$ in $E(G)$, $u$ is
+different from $v$. Informally, this means that the graph is undirected, and
+does not contain loops. We say a graph $G$ is \emph{connected} if there exists
+a sequence of adjacent edges, i.e.~a path, between every vertex $u$ and $v$ in
+$V(G)$.  Finally, we say a graph is \emph{cyclic} if it contains a non-empty
+path which starts and ends at the same vertex. A graph which is not cyclic is
+called \emph{acyclic}.
+
+For the remainder of this paper, all graphs are assumed to be simple.
+
+Terminology aside, let us return to the students' dilemma. As we mentioned
+earlier, we can model their problem using graph theory. Let $G = (V, E, w)$ be
+a connected, weighted graph whose vertices correspond to students and whose
+edges correspond to opportunities to pass messages, where the weight $w(uv)$ of
+an edge $uv \in E$ corresponds to the risk that the conversation between the
+students $u,v$ is compromised (see \Fref{fig:class-graph}).
+Call $G$ the students' classroom graph.
 
 \input{examples/class-graph-example.tex}
 
-For the remainder of this paper, all graphs are assumed to be simple and
-undirected, and all weights are assumed to be positive. Recall that a graph is
-connected if there exists a path between every vertex $u$ and $v$ in the graph.
+An ideal method of passing messages would require that the students find a set
+of opportunities to pass messages, $E' \subset E(G)$, such that the total risk
+the students run is as low as possible, and every student receives updates
+about the game. This corresponds to some connected subgraph $T = (V, E', w)$ of
+the classroom graph $G$, where $E' \subset E(G)$ and $V(T) = V(G)$.
 
-\begin{defn}
-Let $G$ be a graph. We call $G$ \emph{connected} if there is
-a sequence of adjacent edges, i.e.~a path,  between every vertex $u$ and $v$
-in $G$.
-\end{defn}
-
-An ideal method of passing messages would require that the students find
-a set of opportunities to pass messages, $E' \subset E$, such that the total
-risk the students run is as low as possible, and every student receives
-updates about the game. This corresponds to some subgraph $T = (V, E', w)$
-of the classroom graph $G$.
-
-%% Avoid using words like immediately; condescending to the reader
-
-Immediately, we see that any cyclic subgraph $T$ of the classroom graph can
-never be considered a low risk method of passing messages. This is a
+Immediately, we see that any connected cyclic subgraph $T$ of the classroom
+graph can never be considered a low risk method of passing messages. This is a
 consequence of trying to minimize the total risk the students run. Suppose the
 students come up with some connected cyclic subgraph $T = (V, E', w)$ which
 they want to use to pass messages. We can create a new subgraph $T^*$ of $T$ by
 removing an edge from each of the cycles in $T$. This new subgraph has a lower
 risk of getting the students caught as it contains strictly fewer edges than
-$T$.  Moreover, because removing single edges from cycles preserves the
+$T$. Moreover, because removing single edges from cycles preserves the
 connectedness in $T$, this subgraph can still be used to pass messages to
 everyone. Therefore, since we can always construct a lower risk subgraph given
 a cyclic subgraph, we won't bother considering cyclic subgraphs to pass
 messages.
 
 \begin{defn}
-Let $G = (V, E)$ be a connected graph. Then a \emph{spanning tree} $T$ of $G$
+Let $G$ be a connected graph. Then a \emph{spanning tree} $T$ of $G$
 is defined as a connected acyclic subgraph $T = (V, E')$, where $E' \subset
-E$.
+E(G)$ and $V(T) = V(G)$.
 \end{defn}
 
 Reformulating the students' problem, we say the students are looking for a
@@ -201,14 +221,14 @@ The following algorithm, due to Robert C. Prim, can be used to compute
 the minimum spanning tree $T^*$ of a weighted graph $G$
 \cite[pp. 634--636]{clrs}.
 
-\begin{defn}[{\bfseries Prim's Algorithm}] Let $G = (V, E, w)$ be a
-weighted graph. Then a minimum spanning tree $T^*$ of $G$ can be computed as
-follows:
+\begin{defn}[{\bfseries Prim's Algorithm}]\label{prim-alg}
+Let $G = (V, E, w)$ be a weighted graph. Then a minimum spanning tree $T^*$ of
+$G$ can be computed as follows:
 \begin{enumerate}
     \item Begin with an empty set $T = \emptyset$ and a set $X
-    = \left\{v\right\}$, where $v \in V$ is arbitrarily selected.
+    = \{v\}$, where $v \in V$ is arbitrarily selected.
     \item Until $X = V$ repeat the step below.
-    \item Let $Y$ be the set edges with one vertex in $X$ and the other
+    \item Let $Y$ be the set of edges with one vertex in $X$ and the other
     vertex in $E - X$. Choose the edge $e \in Y$ with the smallest weight
     $w(e)$, breaking ties arbitrarily. Add $e$ to $T$ and add the vertex at
     the other end of $e$ to $X$.
@@ -239,72 +259,93 @@ have a myriad of other important applications. They provide a solution to a
 vast array of real world optimization problems, in fields as disparate as
 computer networking, machine learning and infrastructure construction. From the
 fairly trivial scenario used above, we see that computing a minimum spanning
-trees is an important part of broadcasting information efficiently among a set
+tree is an important part of broadcasting information efficiently among a set
 of interconnected parties. Therefore, it is important to know whether
 algorithms such as Prim's algorithm really do work correctly to output minimum
 spanning trees.
 
 My personal interest in analyzing minimum spanning tree algorithms grew out of
-my interest in their asymptotic running time analyses. Particularly, the
-analysis of a randomized algorithm to compute minimum spanning trees very
-efficiently for arbitrary graphs, due to Karger, Klein and Tarjan. For more
-information see \cite{linear-rand-mst}.
+my interest in their asymptotic running time analyses. Asymptotic analysis
+gives strong bounds on the number of operations a computer will need to perform
+when running an algorithm. I am particularly interested in the analysis of
+randomized algorithms which compute minimum spanning trees of arbitrary graphs
+very efficiently \cite{linear-rand-mst}. Moreover minimum spanning tree
+algorithms have introduced me to key concepts in graph theory and combinatorics,
+which I have thoroughly enjoyed studying.
 
-The remainder of this paper is devoted to proving the correctness of
-Prim's algorithm.
+The remainder of this paper is devoted to proving the correctness of Prim's
+algorithm.
 
 The proof of correctness will proceed in three parts. First, we show that the
 algorithm terminates. Then we show that it outputs a spanning tree. Finally,
 we show that the output spanning tree is minimal.
 
-\section{Connectedness and the Cut Lemma}
+\section{Connectedness and the Cut Property}
 
 Before we begin, let us establish an important property of connected graphs,
-which will allow us to more easily navigate the proofs ahead.
+called the cut property. This property will allow us to more easily navigate
+the proofs ahead.
 
-The motivation behind the following lemma is that it allows us to clearly link
-what Prim's algorithm does in every step to the connectedness of its
-input graph. In every step, the algorithm adds an edge $e$ to $T$ with one
-endpoint in $X$ and another endpoint in $V - X$. If we can show that for any
-choice of $X$ and $V - X$, this edge $e$ always exists, then we can easily
-deduce many other properties of the algorithm.
+\begin{defn}
+Let $G$ be a connected graph. A \emph{cut} $(A, B)$ of $G$ is a partition of
+the vertex set $V(G)$ into two sets $A$ and $B$, such that $A \cup B = V(G)$
+and $A \cap B = \emptyset$.
+\end{defn}
+
+If $(A, B)$ is a cut of $G$, and $e \in E(G)$ is an edge with one endpoint in
+$A$ and the other in $B$, we say the edge $e$ \emph{crosses the cut} $(A, B)$.
+
+\begin{defn}
+Let $G$ be a connected graph, and let $A$ be a subset of $V(G)$. Then an
+\emph{induced subgraph} $G[A]$ is a subgraph of $G$ whose vertex set is $A$ and
+whose edge set is all edges in $E(G)$ with both endpoints in $A$.
+\end{defn}
+
+The motivation behind the cut property is that it allows us to clearly link
+what Prim's algorithm does in every step to the connectedness of its input
+graph. In every step, the algorithm adds an edge $e$ to $T$ with one endpoint
+in $X$ and another endpoint in $V - X$. If we can show that there always exists
+an edge crossing the cut $(X,V - X)$, then we can easily deduce many other
+properties of the algorithm.
+
+The notion of an induced subgraph is required to formally prove the
+cut property.
 
 \begin{lem}[{\bfseries The Cut Property}]
-Let $G = (V, E, w)$ be a weighted graph. Then $G$ is connected
-if and only if for any partition of $V$ into two sets $A$, $B$ such that
-$A \cup B = V$ and $A \cap B = \emptyset$, there exists at least
-one edge with a vertex in $A$ and a vertex in $B$, i.e., an edge which
-crosses the cut $(A, B)$.
+Let $G = (V, E, w)$ be a weighted graph. Then $G$ is connected if and only if
+for any cut $(A, B)$ of $G$, there exists at least one edge which crosses the
+cut.
 
 \begin{proof}
 Assume $G$ is connected. Then there exists a path between every vertex $u$ and
-$v$ in $V$. Let $A$ and $B$ be an arbitrary partition of $V$ such that
-$A \cup B = V$ and $A \cap B = \emptyset$. Now suppose $a \in A$ and $b \in B$
-are two vertices on different sides of the partition. Then by the connectedness
-of $G$, there exists a sequence of edges between $a$ and $b$. Because $a$ and
-$b$ are on different sides of the partition, there must be some edge $e \in E$
-which has one endpoint in $A$ and the other endpoint in $B$. Hence, there
-exists a cut which crosses $(A, B)$. Since $A$ and $B$ were chosen arbitrarily,
-we've shown connectedness implies the cut property.
+$v$ in $V(G)$. Let $(A, B)$ be a cut of $G$, and suppose $a \in A$ and $b \in
+B$ are two vertices on different sides of the cut. Then by the connectedness of
+$G$, there exists a sequence of edges between $a$ and $b$. Because $a$ and $b$
+are on different sides of the cut, there must be some edge $uv \in E(G)$ with
+one endpoint $u$ in $A$ and the other endpoint $v$ in $B$. Hence, there
+exists an edge which crosses the cut $(A, B)$. Since the cut $(A, B)$ was
+chosen arbitrarily, we have shown connectedness implies the cut property.
 
-Now, assume that for all partitions $A$, $B$ of a graph $G$, and there
-exists at least one edge $e \in E$ which has a vertex in $A$ and a vertex in
-$B$. First, we show that for any choice of $A$ and $B$, $A$ and $B$ are
-connected.
+Now, assume that for all cuts $(A, B)$ of $G$, there exists at least one edge
+$e \in E(G)$ which crosses the cut $(A, B)$. First, we show that for any choice
+of $A$ and $B$, the induced subgraphs $G[A]$ and $G[B]$ are connected.
 
-Suppose $A$ is not connected. Then there exist vertices $x_1, x_2, \ldots, x_k$
-in $A$ which cannot be connected by a path. Let $X \subset A$ denote the
-set of vertices which can be reached from $x_1$ by a path. Assume, without loss
-of generality, that $B$ is connected, and the edge across $(A, B)$ has an
-endpoint in $X$. Then for the partition $X \cup B$ and $A - (X \cup B)$ there
-do not exist any edges which cross the cut $(X \cup B, A - (X \cup B))$, a
-contradiction. Hence, $A$ must be connected. Similarly, $B$ must be connected.
+Suppose $G[A]$ is not connected. Then there exist vertices $x_1, x_2, \ldots,
+x_k$ in $G[A]$ which cannot be connected by a path. Let $X \subset A$ denote
+the set of vertices which can be reached from $x_1$ by a path. Assume, without
+loss of generality, that $G[B]$ is connected, and the edge across $(A, B)$ has
+an endpoint in $X$. Then there do not exist any edges which cross the cut $(X
+\cup B, A - (X \cup B))$ in $G$, a contradiction. Hence, $G[A]$ must be
+connected. Similarly, $G[B]$ must be connected.
 
-Since $A$ and $B$ are connected by the edge $e$ and $A \cup B = V$, the entire
-graph $G$ is connected. Therefore, we've shown the cut property implies
-connectedness.
+By our assumption, there exists at least one edge $e \in E(G)$ across the cut
+$(A, B)$.  Since, $G[A]$ and $G[B]$ are connected, and the edge $e$ joins these
+two partitions of $G$, the entire graph $G$ is connected. Therefore, we've
+shown the cut property implies connectedness.
 \end{proof}
 \end{lem}
+
+% Review the use of V(G) and E(G), vs. V and E alone
 
 \section{Proof of Correctness of Prim's Algorithm}
 
@@ -320,11 +361,11 @@ Let $G = (V, E, w)$ be a connected, weighted graph. Then the
 execution of Prim's algorithm for the input $G$ eventually terminates.
 
 \begin{proof}
-In each step of Prim's algorithm, an edge $e$ is added to $T$, with one
+In each step of Prim's algorithm, an edge $uv$ is added to $T$, with one
 endpoint $u \in X$ and another endpoint $v \in V - X$. The endpoint $v$ is then
 added to $X$. By the cut property, we know that such an edge exists for all
-cuts across $(X, V - X)$. Therefore, after every step of the algorithm, an
-endpoint $v \in V - X$ of an edge $e$ is added to $X$, and hence the
+cuts $(X, V - X)$. Therefore, after every step of the algorithm, an
+endpoint $v \in V - X$ of an edge $uv$ is added to $X$, and hence the
 cardinality of $X$ increases by $1$. Since the cardinality of $X$ begins at
 $1$, and the cardinality of $V$ is finite, there must exist some step after
 which $X = V$. Hence, Prim's algorithm must terminate.
@@ -340,25 +381,26 @@ constitutes a spanning tree of $G$.
 First, we show that the output of Prim's algorithm $T^*$ is always connected,
 using induction on the number of steps of the algorithm.
 
-In the base case, let $X = \left\{v\right\}$. Then by the cut property, we
-know there exists an edge $e \in E$ across the cut $(X, V - X)$. Adding the
-endpoint of $v'$ of $e$ to $X$ and the edge $e$ to $T$ clearly leaves $T^*$
-connected as there is a path between all the vertices in $T^*$.
+In the base case, let $X = \{v\}$. By the cut property, we know
+there exists an edge $vw \in E(G)$ across the cut $(X, V - X)$. Adding the
+vertex $w$ to $X$ and the edge $vw$ to $T$ clearly leaves $T^*$ connected as
+there is a path between all the vertices in $T^*$. Thus, $T^*$ is connected
+after the first step.
+% STOPPED HERE: needs a lot of work
 
 Now assume $T^*$ is connected at after some step $k$. We show that $T^*$ is
-still connected after step $k + 1$. By the cut property, we know that in any
-step of the algorithm, there exists an edge $e$ across the cut $(X, V - X)$,
-where the endpoint of the cut $v' \in V - X$ is not in $T^*$. Hence, assuming
-$T^*$ is connected, adding the vertex $v'$ to $X$ and the edge $e$ to $T$
-leaves $T^*$ connected at the end of step $k + 1$. Therefore, by induction,
-$T^*$ is always connected.
+still connected after step $k + 1$. By the cut property, we know that there
+exists an edge $uv$ crossing the cut $(X, V - X)$, with endpoint $v \in V - X$.
+Assuming $T^*$ is connected, adding the vertex $v$ to $X$ and the edge $uv$ to
+$T$ leaves $T^*$ connected at the end of step $k + 1$. By induction $T^*$ is
+always connected.
 
 Next, we show that $T^*$ never contains any cycles. In any step of the
-algorithm, the only way to create a cycle is to add an edge $e$ to $T$
-with both endpoints $x$ and $x'$ in $X$ when there already exists a path
-between $x$ and $x'$. By definition, however, the algorithm only adds edges
-to $T$ with one endpoint in $X$ and the other in $V - X$. Therefore,
-$T^* = (X, T, w)$ must be acylic after every step of the algorithm.
+algorithm, the only way to create a cycle in $T^*$ is to add an edge $uv$ to
+$T$ with both endpoints $u$ and $v$ in $X$. This would create a cycle as $T^*$
+is connected. By definition, however, the algorithm only adds edges to $T$ with
+one endpoint in $X$ and the other in $V - X$. Therefore, $T^* = (X, T, w)$ is
+acylic after every step of the algorithm.
 
 Since Prim's algorithm terminates when $X = V$, and the output
 $T^* = (X, T, w)$ is always connected and acyclic, the output of Prim's
@@ -394,8 +436,8 @@ algorithm, $T^*$, constitutes a minimum spanning tree of the input graph $G$.
 \end{thm}
 
 Note that no step in the three precedent proofs was dependent on the choice of
-the initial vertex $S \in X$, and thus this element can be selected arbitrarily
-without consequence.
+the initial vertex, and thus this element can be selected arbitrarily without
+consequence.
 
 \section{Conclusion}
 
@@ -408,21 +450,83 @@ passing messages to one another in their classroom graph (see
 \input{examples/class-graph-mst-example.tex}
 
 Although we have shown that Prim's algorithm is correct, there are many other
-aspects of minimum spanning tree computation that are still of interest. For
-example, if we change the weights of $m$ edges in the input graph, how could we
-recompute an MST of the input graph efficiently? This question comes up very
-often when MSTs are used in relation to communication networks, where the
-strengths of communications channels can vary over time. See
-\cite[§8]{eisner97} for a complex yet thorough solution to this problem.
+aspects of minimum spanning tree computation that we could potentially explore.
+For example, if we change the weights of $m$ edges in the input graph, how
+could we recompute an MST of the input graph efficiently? This question comes
+up very often when MSTs are used in relation to communication networks, where
+the strengths of communications channels can vary over time. See
+\cite[§8]{eisner97} for a thorough solution to this problem.
 
 Moving further away from practical applications of MST computation, we could
 also ask whether MSTs and algorithms such as Prim's algorithm provide good
-approximate solutions to other problems. For example, consider using MST
-computation to approximate solutions to the Travelling Salesman Problem. We
-could also ask whether Prim's algorithm could be modified to handle negative
-edge weights.
+approximate solutions to other mathematical problems. For example, consider
+using MST computation to approximate solutions to the Travelling Salesman
+Problem \cite[pp. 1096--1097]{clrs}. We could also ask whether Prim's algorithm could
+be modified to handle negative edge weights.
+
+Prim's algorithm and MSTs are a rich and interesting area of mathematics with
+important applications to the real world. See the references below for a very
+thorough overview other MST computation techniques, as well as more information
+about MSTs in general.
+
+All of the MSTs in this paper were found using an original implementation of
+Prim's algorithm, written in Python. See the Appendix for more information.
+
+\clearpage
 
 \bibliographystyle{plain}
 \bibliography{doc.bib}
+\clearpage
+
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+
+\def\listingautorefname{Listing}
+
+\subsection*{An Implementation of Prim's Algorithm in Python}
+
+The following program can be run using Python 2.7.X. The program takes as input
+a text file describing a graph, and outputs a list of edges which constitute the
+minimum spanning tree of the graph described.
+
+The input file must be formatted as follows. The first line must contain the
+number of vertices and the number of edges in the graph. For example the line
+\texttt{4 2} indicates the graph has 4 vertices and 2 edges. All subsequent
+lines must be integer triples, each describing a weighted edge of the graph.
+The first two integers describe the endpoints of the edge, and the final
+integer its weight. For example, the line \texttt{0 3 5} indicates the graph
+has an edge with endpoints at verticies $0$ and $3$, and this edge has weight
+$5$.
+
+To run this code with a given input file, execute \texttt{python prim.py
+graph.txt} in your favourite command line interface, where \texttt{prim.py}
+contains the code below and \texttt{graph.txt} describes the input graph as
+defined above.
+
+See \autoref{lst:example-graph-one} and \autoref{lst:example-graph-two} for
+more examples.
+
+\inputminted[frame=lines,framesep=1em,linenos]{python}{code/prim.py}
+
+\subsection*{Input Graphs for Examples}
+
+The following text files were input into the implementation of Prim's algorithm
+above to generate the MSTs in \autoref{fig:prim-example} and
+\autoref{fig:class-graph-mst}, respectively.
+
+\begin{listing}[h]
+\inputminted[frame=lines,framesep=1em,linenos]{text}{code/example-graph-one.txt}
+\caption{This file was used to generate the MST in \autoref{fig:prim-example}.
+Here, $0$ corresponds to the initial vertex S. Vertices A through C
+correspond to numbers $1$ through $3$, respectively.}
+\label{lst:example-graph-one}
+\end{listing}
+
+\begin{listing}[h]
+\inputminted[frame=lines,framesep=1em,linenos]{text}{code/example-graph-two.txt}
+\caption{This file was used to generate the MST in
+\autoref{fig:class-graph-mst}. Again, $0$ corresponds to the initial vertex S.}
+\label{lst:example-graph-two}
+\end{listing}
 
 \end{document}
